@@ -3,6 +3,8 @@ import axios from 'axios';
 
 import './App.css';
 
+import { ReactComponent as Check } from './check.svg';
+
 const storiesReducer = (state, action) => {
     switch (action.type) {
         case 'STORIES_FETCH_INIT':
@@ -202,7 +204,7 @@ const Item = ({ item, onRemoveItem }) => {
                     type="button" 
                     onClick={() => onRemoveItem(item)}
                 >
-                    Dismiss
+                    <Check height="18px" width="18px" />
                 </button>
             </span>
         </li>
