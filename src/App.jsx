@@ -39,16 +39,32 @@ const storiesReducer = (state, action) => {
 };
 
 const useStorageState = (key, initialState) => {
+    const isMounted = React.useRef(false);
+
     const [value, setValue] = React.useState(
         localStorage.getItem(key) || initialState
     );
 
     React.useEffect(() => {
-        localStorage.setItem(key, value);
+        if (!isMounted.current) {
+            isMounted.current = true;
+        } else {
+            console.log('A');
+            localStorage.setItem(key, value);
+        }
     }, [value, key]);
 
     return [value, setValue];
 };
+
+const getSumComments = (stories) => {
+    console.log('C');
+
+    return stories.data.reduce(
+        (result, value) => result + value.num_comments,
+        0
+    );
+}
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
@@ -85,15 +101,16 @@ const App = () => {
     }, [url]);
 
     React.useEffect(() => {
+        console.log('How many times do I log?');
         handleFetchStories();
     }, [handleFetchStories]);
 
-    const handleRemoveStory = (item) => {
+    const handleRemoveStory = React.useCallback((item) => {
         dispatchStories({
             type: 'REMOVE_STORY',
             payload: item
         });
-    };
+    }, []);
 
     const handleSearchInput = (event) => {
         setSearchTerm(event.target.value);
@@ -105,9 +122,16 @@ const App = () => {
         event.preventDefault();
     }
 
+    console.log('B:App');
+
+    const sumComments = React.useMemo(
+        () => getSumComments(stories),
+        [stories]
+    );
+
     return (
         <div className="container">
-            <h1 className="headline-primary">My Hacker Stories</h1>
+            <h1 className="headline-primary">My Hacker Stories with {sumComments} comments.</h1>
 
             <SearchForm
                 searchTerm={searchTerm}
@@ -176,16 +200,19 @@ const InputWithLabel = ({
     </>
 )
 
-const List = ({ list, onRemoveItem }) => (
-    <ul>
-        {list.map((item) => (
-            <Item
-                key={item.objectID}
-                item={item}
-                onRemoveItem={onRemoveItem}
-            />
-        ))}
-    </ul>
+const List = React.memo(
+    ({ list, onRemoveItem }) =>
+        console.log('B:List') || (
+            <ul>
+                {list.map((item) => (
+                    <Item
+                        key={item.objectID}
+                        item={item}
+                        onRemoveItem={onRemoveItem}
+                    />
+                ))}
+            </ul>
+        )
 )
 
 const Item = ({ item, onRemoveItem }) => {
@@ -199,9 +226,9 @@ const Item = ({ item, onRemoveItem }) => {
             <span style={{ width: '10%' }}>{item.num_comments}</span>
             <span style={{ width: '10%' }}>{item.points}</span>
             <span style={{ width: '10%' }}>
-                <button 
+                <button
                     className="button button_small"
-                    type="button" 
+                    type="button"
                     onClick={() => onRemoveItem(item)}
                 >
                     <Check height="18px" width="18px" />
