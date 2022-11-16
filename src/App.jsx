@@ -6,6 +6,7 @@ import './App.css';
 import { ReactComponent as Check } from './check.svg';
 
 const storiesReducer = (state, action) => {
+
     switch (action.type) {
         case 'STORIES_FETCH_INIT':
             return {
@@ -212,3 +213,5 @@ const Item = ({ item, onRemoveItem }) => {
 };
 
 export default App;
+
+export { storiesReducer, SearchForm, InputWithLabel, List, Item};
